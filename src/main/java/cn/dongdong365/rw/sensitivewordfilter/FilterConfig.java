@@ -18,7 +18,7 @@ public class FilterConfig {
     public String onViolationAction = "block";        // block(拦截并私聊) / censor(***化后发送)
     public boolean checkPlayerName = true;
     public boolean exemptAdmins = true;
-    public List<String> exemptPlayers = new ArrayList<>();
+    public List<String> exemptPlayers = new ArrayList<>(); // 可填玩家名或 UUID
     public boolean logToConsole = true;
     public String playerNameKickMessage = "你的玩家名包含违禁词，请修改后重进。";
     public int autoResetHours = 0;
@@ -154,10 +154,13 @@ public class FilterConfig {
         return result != null ? result : thresholds.get(0);
     }
 
-    public boolean isExempt(String name, boolean admin) {
+    public boolean isExempt(String name, String uuid, boolean admin) {
         if (admin && exemptAdmins) return true;
+        if (name == null) name = "";
+        if (uuid == null) uuid = "";
         for (String s : exemptPlayers) {
-            if (s.equalsIgnoreCase(name)) return true;
+            if (s == null || s.isEmpty()) continue;
+            if (s.equalsIgnoreCase(name) || s.equalsIgnoreCase(uuid)) return true;
         }
         return false;
     }

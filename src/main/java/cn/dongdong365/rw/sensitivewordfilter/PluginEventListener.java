@@ -45,6 +45,9 @@ public class PluginEventListener implements EventListenerHost {
             plugin.getViolationData().clearMute(uuid);
         }
 
+        // 记录玩家名，便于离线时按名操作
+        plugin.getViolationData().ensureName(uuid, player.getName());
+
         if (plugin.getConfig().checkPlayerName && !plugin.getWordFilter().isExempt(player)) {
             if (plugin.getWordFilter().containsSensitive(player.getName())) {
                 Log.clog("[敏感词] 玩家 {0} 的玩家名包含违禁词，已踢出。", player.getName());

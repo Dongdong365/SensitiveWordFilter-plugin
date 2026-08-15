@@ -7,19 +7,19 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 词库加载与过滤核心。
+ * 使用 AC 自动机实现多模式匹配，避免词库大时对每条消息做 O(N*L) 的重复扫描。
  */
 public class WordFilter {
     private final FilterConfig config;
     private final FileUtils folder;
-    private final List<String> sensitiveWords = new ArrayList<>();
-    private final List<String> properNouns = new ArrayList<>();
+    private final CopyOnWriteArrayList<String> sensitiveWords = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<String> properNouns = new CopyOnWriteArrayList<>();
+    private volatile AcAutomaton automaton = new AcAutomaton(Collections.emptyList());
 
     public WordFilter(FileUtils folder, FilterConfig config) {
         this.folder = folder;
@@ -36,6 +36,12 @@ public class WordFilter {
 
         properNouns.clear();
         properNouns.addAll(readLines(folder.toFile("proper_nouns.txt")));
+
+        rebuildAutomaton();
+    }
+
+    private void rebuildAutomaton() {
+        automaton = new AcAutomaton(sensitiveWords);
     }
 
     private void releaseDefaultIfMissing(String dataFileName, String resourcePath) {
@@ -74,15 +80,12 @@ public class WordFilter {
     }
 
     public boolean isExempt(PlayerHess player) {
-        return config.isExempt(player.getName(), player.isAdmin());
+        return config.isExempt(player.getName(), player.getConnectHexID(), player.isAdmin());
     }
 
     public boolean containsSensitive(String input) {
         if (input == null || input.isEmpty()) return false;
-        for (String word : sensitiveWords) {
-            if (input.contains(word)) return true;
-        }
-        return false;
+        return automaton.findFirst(input.toLowerCase()) >= 0;
     }
 
     /**
@@ -92,52 +95,52 @@ public class WordFilter {
     public FilterResult filter(String input) {
         if (input == null || input.isEmpty()) return new FilterResult(false, input);
 
-        String work = input;
-        Map<String, String> placeholders = new HashMap<>();
-
-        // 保护专有名词
-        for (int i = 0; i < properNouns.size(); i++) {
-            String noun = properNouns.get(i);
-            if (noun.isEmpty()) continue;
-            String ph = "@@PN" + i + "@@";
-            placeholders.put(ph, noun);
-            work = work.replace(noun, ph);
-        }
+        String text = input.toLowerCase();
+        boolean[] protectedMask = buildProtectedMask(text);
+        List<Match> matches = automaton.findAll(text);
 
         boolean hit = false;
-        String result;
+        boolean[] starMask = new boolean[text.length()];
+        for (Match m : matches) {
+            if (overlapsProtected(protectedMask, m.start, m.end)) continue;
+            hit = true;
+            for (int i = m.start; i < m.end; i++) starMask[i] = true;
+        }
+
+        if (!hit) return new FilterResult(false, input);
+
         if ("enforcing".equalsIgnoreCase(config.filterMode)) {
-            for (String word : sensitiveWords) {
-                if (word.isEmpty()) continue;
-                if (work.contains(word)) {
-                    hit = true;
-                    break;
-                }
-            }
-            result = hit ? "***" : work;
-        } else {
-            result = work;
-            for (String word : sensitiveWords) {
-                if (word.isEmpty()) continue;
-                if (result.contains(word)) {
-                    hit = true;
-                    result = result.replace(word, repeat(word.length()));
-                }
-            }
+            return new FilterResult(true, "***");
         }
 
-        // 还原专有名词
-        for (Map.Entry<String, String> e : placeholders.entrySet()) {
-            result = result.replace(e.getKey(), e.getValue());
+        StringBuilder sb = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            sb.append(starMask[i] ? '*' : input.charAt(i));
         }
-
-        return new FilterResult(hit, result);
+        return new FilterResult(true, sb.toString());
     }
 
-    private String repeat(int count) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < count; i++) sb.append("*");
-        return sb.toString();
+    private boolean[] buildProtectedMask(String text) {
+        boolean[] mask = new boolean[text.length()];
+        for (String noun : properNouns) {
+            if (noun.isEmpty()) continue;
+            String key = noun.toLowerCase();
+            int from = 0;
+            while (true) {
+                int idx = text.indexOf(key, from);
+                if (idx < 0) break;
+                for (int i = idx; i < idx + key.length(); i++) mask[i] = true;
+                from = idx + 1;
+            }
+        }
+        return mask;
+    }
+
+    private boolean overlapsProtected(boolean[] mask, int start, int end) {
+        for (int i = start; i < end; i++) {
+            if (mask[i]) return true;
+        }
+        return false;
     }
 
     public void addSensitiveWord(String word) {
@@ -146,13 +149,15 @@ public class WordFilter {
         if (sensitiveWords.contains(w)) return;
         sensitiveWords.add(w);
         folder.toFile("sensitive_words.txt").writeFile(w + "\n", true);
+        rebuildAutomaton();
     }
 
     public void removeSensitiveWord(String word) {
         if (word == null) return;
         String w = word.trim();
-        sensitiveWords.remove(w);
+        if (!sensitiveWords.remove(w)) return;
         rewriteWordFile();
+        rebuildAutomaton();
     }
 
     private void rewriteWordFile() {
@@ -171,5 +176,107 @@ public class WordFilter {
             this.hit = hit;
             this.filtered = filtered;
         }
+    }
+
+    private static class Match {
+        final int start;
+        final int end;
+        Match(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    /**
+     * 简单的 AC 自动机，支持大小写不敏感匹配。
+     */
+    private static class AcAutomaton {
+        private final Node root = new Node();
+
+        AcAutomaton(Collection<String> words) {
+            for (String word : words) {
+                if (word == null || word.isEmpty()) continue;
+                insert(word.toLowerCase());
+            }
+            buildFailure();
+        }
+
+        private void insert(String word) {
+            Node node = root;
+            for (int i = 0; i < word.length(); i++) {
+                char c = word.charAt(i);
+                node = node.next.computeIfAbsent(c, k -> new Node());
+            }
+            node.outputLength = word.length();
+        }
+
+        private void buildFailure() {
+            Queue<Node> queue = new ArrayDeque<>();
+            for (Node child : root.next.values()) {
+                child.fail = root;
+                queue.add(child);
+            }
+            while (!queue.isEmpty()) {
+                Node current = queue.poll();
+                for (Map.Entry<Character, Node> e : current.next.entrySet()) {
+                    char c = e.getKey();
+                    Node child = e.getValue();
+                    Node fail = current.fail;
+                    while (fail != null && !fail.next.containsKey(c)) {
+                        fail = fail.fail;
+                    }
+                    child.fail = (fail == null) ? root : fail.next.get(c);
+                    if (child.fail != null && child.fail.outputLength > 0 && child.outputLength == 0) {
+                        child.outputLength = child.fail.outputLength;
+                    }
+                    queue.add(child);
+                }
+            }
+        }
+
+        /**
+         * 返回第一个命中的结束位置，未命中返回 -1。
+         */
+        int findFirst(String text) {
+            Node node = root;
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                while (node != root && !node.next.containsKey(c)) {
+                    node = node.fail;
+                }
+                node = node.next.getOrDefault(c, root);
+                if (node.outputLength > 0) {
+                    return i + 1;
+                }
+            }
+            return -1;
+        }
+
+        /**
+         * 返回所有命中的区间 [start, end)。
+         */
+        List<Match> findAll(String text) {
+            List<Match> matches = new ArrayList<>();
+            Node node = root;
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                while (node != root && !node.next.containsKey(c)) {
+                    node = node.fail;
+                }
+                node = node.next.getOrDefault(c, root);
+                int len = node.outputLength;
+                if (len > 0) {
+                    int end = i + 1;
+                    matches.add(new Match(end - len, end));
+                }
+            }
+            return matches;
+        }
+    }
+
+    private static class Node {
+        final Map<Character, Node> next = new HashMap<>();
+        Node fail;
+        int outputLength; // 以该节点结尾的最长敏感词长度
     }
 }

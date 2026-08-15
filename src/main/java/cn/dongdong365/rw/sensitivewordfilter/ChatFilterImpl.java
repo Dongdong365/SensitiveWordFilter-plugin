@@ -28,7 +28,7 @@ public class ChatFilterImpl implements Administration.ChatFilter {
         WordFilter.FilterResult result = plugin.getWordFilter().filter(message);
         if (!result.hit) return message;
 
-        int count = plugin.getViolationData().increment(player.getConnectHexID());
+        int count = plugin.getViolationData().increment(player.getConnectHexID(), player.getName());
         FilterConfig.Threshold threshold = plugin.getConfig().getThresholdFor(count);
         String actionMsg = formatMessage(threshold.message, count, threshold.durationMinutes);
 
@@ -85,12 +85,14 @@ public class ChatFilterImpl implements Administration.ChatFilter {
             long delayMs = banUntil - Time.concurrentMillis();
             if (delayMs > 0) {
                 int delaySec = (int) (delayMs / 1000);
+                String taskName = "SensitiveWordFilter-Unban-" + uuid;
+                net.rwhps.server.core.thread.Threads.closeTimeTask(taskName, "SensitiveWordFilter");
                 net.rwhps.server.core.thread.Threads.newTimedTask(
-                        "SensitiveWordFilter-Unban-" + uuid,
+                        taskName,
                         "SensitiveWordFilter",
                         "自动解封",
                         delaySec,
-                        delaySec,
+                        Integer.MAX_VALUE,
                         TimeUnit.SECONDS,
                         () -> plugin.unban(uuid)
                 );

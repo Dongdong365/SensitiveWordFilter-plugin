@@ -58,11 +58,6 @@ public class SensitiveWordFilterPlugin extends Plugin {
     }
 
     @Override
-    public void registerServerClientCommands(CommandHandler handler) {
-        Commands.registerClient(this, handler);
-    }
-
-    @Override
     public void registerCoreCommands(CommandHandler handler) {
         Commands.registerCore(this, handler);
     }
@@ -112,12 +107,14 @@ public class SensitiveWordFilterPlugin extends Plugin {
                 int delaySec = (int) (delayMs / 1000);
                 if (delaySec > 0) {
                     final String uuid = e.getKey();
+                    String taskName = "SensitiveWordFilter-Unban-" + uuid;
+                    net.rwhps.server.core.thread.Threads.closeTimeTask(taskName, "SensitiveWordFilter");
                     net.rwhps.server.core.thread.Threads.newTimedTask(
-                            "SensitiveWordFilter-Unban-" + uuid,
+                            taskName,
                             "SensitiveWordFilter",
                             "启动时自动解封",
                             delaySec,
-                            delaySec,
+                            Integer.MAX_VALUE,
                             TimeUnit.SECONDS,
                             () -> unban(uuid)
                     );
