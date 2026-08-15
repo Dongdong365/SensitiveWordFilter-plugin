@@ -8,6 +8,10 @@
 > 这是因为有服务端在`data/Config.json` 中 `  "log": "TRACK",`设置成了`  "log": "WARN",` 导致该提示被过滤掉了
 >
 > 如果没有特殊需求，建议将WARN等其他的层级改回TRACK。感谢你的信任！
+>
+>相关链接:
+>
+>[铁锈战争开服教程-配置服务端#log](http://www.rustedsvrwiki.de5.net/rwhps/start/config-server/#log)
 
 ## 概述
 
