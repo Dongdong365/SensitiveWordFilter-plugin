@@ -1,4 +1,4 @@
-# SWF 敏感词过滤插件（SensitiveWordFilter）
+# SWF 敏感词过滤插件（SensitiveWordFilter） RW-HPS 适用核心!
 
 ## 概述
 
