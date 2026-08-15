@@ -30,6 +30,11 @@ public class SensitiveWordFilterPlugin extends Plugin {
         violationData = new ViolationData(folder.toFile("violations.json"));
         wordFilter = new WordFilter(folder, config);
         chatFilter = new ChatFilterImpl(this);
+        cleanupExpiredPunishments();
+
+    // ========== 调试更新检查 ==========
+    new RemoteVersionChecker().checkAndLog();
+    // ==================================
 
         cleanupExpiredPunishments();
     }
@@ -67,6 +72,7 @@ public class SensitiveWordFilterPlugin extends Plugin {
         Data.core.getAdmin().addChatFilter(chatFilter);
         scheduleAutoReset();
         Log.clog("[SensitiveWordFilter] 已启用，敏感词数量: " + wordFilter.getSensitiveWordCount());
+        Log.clog("[SensitiveWordFilter] 使用 swf help 查看可用命令！");
     }
 
     @Override

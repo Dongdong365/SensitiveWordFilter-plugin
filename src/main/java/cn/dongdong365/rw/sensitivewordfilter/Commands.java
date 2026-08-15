@@ -27,9 +27,18 @@ public class Commands {
         });
     }
 
-    private static String usage() {
-        return "[SWF] 用法: swf <reload|status|test|add|remove|clear|clearall|info|unban> [参数（支持玩家名/UUID）]";
-    }
+private static String usage() {
+    return "[SWF] swf reload\t重载配置与词库（修改后需执行此命令或重启服务器）\n" +
+           "[SWF] swf status\t查看当前敏感词数量和违规记录玩家数\n" +
+           "[SWF] swf test <消息>\t测试某条消息是否会命中敏感词\n" +
+           "[SWF] swf add <敏感词>\t添加敏感词\n" +
+           "[SWF] swf remove <敏感词>\t移除敏感词\n" +
+           "[SWF] swf clear <玩家名/UUID>\t清除指定玩家的违禁记录并解封\n" +
+           "[SWF] swf clearall\t清除所有玩家的违禁记录并解封\n" +
+           "[SWF] swf info <玩家名/UUID>\t查看指定玩家的违禁记录\n" +
+           "[SWF] swf unban <玩家名/UUID>\t解除指定玩家的封禁\n" +
+           "[SWF] 在线的玩家可用 玩家名/UUID 离线玩家只能用 UUID！UUID可以从violations.json数据库中与玩家名对照获取";
+}
 
     private static String handle(SensitiveWordFilterPlugin plugin, String action, String[] args, PlayerHess sender) {
         switch (action.toLowerCase()) {
