@@ -1,10 +1,21 @@
-# SWF 敏感词过滤插件（SensitiveWordFilter）
+# SWF 敏感词过滤插件（SensitiveWordFilter） RW-HPS 适用核心!
+
+> [!WARNING]
+> **重要提示**
+> 
+> 请注意!有使用者反馈自己在使用插件的过程中出现命令执行成功但没有回应消息的问题
+>
+> 这是因为有服务端在`data/Config.json` 中 `  "log": "TRACK",`设置成了`  "log": "WARN",` 导致该提示被过滤掉了
+>
+> 如果没有特殊需求，建议将WARN等其他的层级改回TRACK。感谢你的信任！
 
 ## 概述
 
-近期铁锈战争圈内交流环境略显浮躁，玩家昵称或聊天内容中不时出现违禁词汇。为营造更和谐、友善的开服氛围，SWF 插件应运而生。它能够自动过滤聊天消息和玩家名称中的敏感词，降低言语冲突风险，同时帮助玩家避免因一时冲动而说出不当言论，减少误会。
+近期铁锈战争圈内交流环境略显浮躁，玩家昵称或聊天内容中不时出现违禁词汇。为营造更和谐、友善的开服氛围，SWF 插件应运而生。它能够自动过滤聊天消息和玩家名称中的敏感词/政治词汇，降低言语冲突风险，同时帮助玩家避免因一时冲动而说出不当/不良言论，减少误会与冲突的发生。
 
-本插件基于 [SensitiveWordFilter（Minecraft 版）](https://github.com/MoeLuoYu/SensitiveWordFilter/tree/main?tab=readme-ov-file) 改编，针对 RW-HPS 服务器进行了适配和增强，并内置了灵活的惩戒系统，服主可根据需要自由调整。
+本插件基于 [SensitiveWordFilter（Minecraft Bukkit）](https://github.com/MoeLuoYu/SensitiveWordFilter/tree/main?tab=readme-ov-file) 改编，
+
+针对铁锈战争开服 RW-HPS 核心 进行了适配和增强，并内置了灵活的惩戒系统，服主可根据需要自由调整。
 
 ---
 
