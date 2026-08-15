@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadFactory;
 public class RemoteVersionChecker {
     // ======================== 可配置常量（只改这里） ========================
     private static final String PLUGIN_NAME = "swf-plugin";          // 远程版本列表中的键名
-    private static final String CURRENT_VERSION = "v26.08.15";        // 当前插件版本
+    private static final String CURRENT_VERSION = "v26.08.16";        // 当前插件版本
     private static final String REMOTE_URL = "http://www.rustedsvrwiki.de5.net/dongserverpluginslastversion.txt";
     private static final String PREFIX = "SensitiveWordFilter";       // 日志中的前缀（可改短）
     // =====================================================================

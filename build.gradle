@@ -12,7 +12,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveBaseName = 'SensitiveWordFilter-RW'
+    archiveBaseName = 'SensitiveWordFilter'
     archiveClassifier = ''
     archiveVersion = SWFVERSION
 }
