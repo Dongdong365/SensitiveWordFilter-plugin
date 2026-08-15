@@ -1,0 +1,9 @@
+{
+  "name": "SensitiveWordFilter",
+  "internalName": "SensitiveWordFilter",
+  "author": "moeluoyu,Dongdong365",
+  "main": "cn.dongdong365.rw.sensitivewordfilter.SensitiveWordFilterPlugin",
+  "description": "RW-HPS 敏感词过滤插件：聊天拦截、玩家名检测、累进惩罚、封禁与自动解封",
+  "version": "v26.08.15",
+  "supportedVersions": ">= 1.3.0-M1"
+}
