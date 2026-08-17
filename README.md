@@ -17,8 +17,6 @@
 
 近期铁锈战争圈内交流环境略显浮躁，玩家昵称或聊天内容中不时出现违禁词汇。为营造更和谐、友善的开服氛围，SWF 插件应运而生。它能够自动过滤聊天消息和玩家名称中的敏感词/政治词汇，降低言语冲突风险，同时帮助玩家避免因一时冲动而说出不当/不良言论，减少误会与冲突的发生。
 
-本插件基于 [SensitiveWordFilter（Minecraft Bukkit）](https://github.com/MoeLuoYu/SensitiveWordFilter/tree/main?tab=readme-ov-file) 改编，
-
 针对铁锈战争开服 RW-HPS 核心 进行了适配和增强，并内置了灵活的惩戒系统，服主可根据需要自由调整。
 
 ---
@@ -122,6 +120,20 @@
 - **误封处理**：若出现误封，可使用 `swf unban <玩家名>` 解封，或手动编辑 `violations.json` 后执行 `swf reload`。
 - **豁免限制**：当前版本仅支持通过 `exemptAdmins` 豁免房主，暂不支持按玩家 ID 单独豁免。
 - **自动重置**：`autoResetHours` 可定期清零违规次数，适合需要长期平稳运营的服务器。
+
+## 开源许可说明
+本项目代码分为两个部分，采用不同开源协议：
+1. **上游衍生代码**
+修改自 [MoeLuoYu/SensitiveWordFilter](https://github.com/MoeLuoYu/SensitiveWordFilter)
+许可证：**MIT License**
+版权：Copyright (c) 2023-present Sodayo Beijing Co., Ltd (c) 2020-present MoeLuoYu
+
+2. **新增拓展代码**
+由 Dongdong365(GitHub:Dongdong365) 独立开发
+许可证：**GNU AGPLv3**
+
+完整版权信息参阅仓库内 `NOTICE` 文件与 `LICENSE` 文件。
+**不可以将整个项目视作纯 AGPLv3 项目。**
 
 ### 致谢
 
