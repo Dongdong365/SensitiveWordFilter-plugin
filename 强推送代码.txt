@@ -1,0 +1,6 @@
+git add 什么路径大的小的都行(广泛/单个文件)
+git commit -m "何意味"
+git push origin main --force
+
+没冲突推
+git push -u origin main

@@ -1,0 +1,36 @@
+{
+  "filterMode": "permissive",
+  "onViolationAction": "block",
+  "checkPlayerName": true,
+  "exemptAdmins": false,
+  "exemptPlayers": [],
+  "logToConsole": true,
+  "playerNameKickMessage": "[SensitiveWordFilter] 你的玩家名包含违禁词，请修改后重进。",
+  "thresholds": [
+    {
+      "count": 1,
+      "action": "warn",
+      "durationMinutes": 0,
+      "message": "[SensitiveWordFilter] 你的消息包含违禁词（第{count}次），请文明发言。"
+    },
+    {
+      "count": 3,
+      "action": "kick",
+      "durationMinutes": 0,
+      "message": "[SensitiveWordFilter] 因多次发送违禁词（第{count}次），你已被踢出房间。"
+    },
+    {
+      "count": 5,
+      "action": "ban",
+      "durationMinutes": 60,
+      "message": "[SensitiveWordFilter] 因多次发送违禁词（第{count}次），你已被封禁{duration}。"
+    },
+    {
+      "count": 8,
+      "action": "ban",
+      "durationMinutes": -1,
+      "message": "[SensitiveWordFilter] 因多次发送违禁词（第{count}次），你已被永久封禁。"
+    }
+  ],
+  "autoResetHours": 0
+}
